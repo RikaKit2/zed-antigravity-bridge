@@ -18,7 +18,8 @@ pub struct TokenManager {
 
 impl TokenManager {
     pub fn new() -> Self {
-        let initial_project = Self::read_project_id_from_db().unwrap_or_else(|| "charming-craft-95w3k".to_string());
+        let initial_project =
+            Self::read_project_id_from_db().unwrap_or_else(|| "charming-craft-95w3k".to_string());
         info!("Antigravity Project ID: {}", initial_project);
 
         Self {
@@ -77,7 +78,7 @@ impl TokenManager {
     }
 
     fn read_project_id_from_db() -> Option<String> {
-        let home = std::env::var("HOME").unwrap_or_else(|_| "/home/user".to_string());
+        let home = std::env::var("HOME").ok()?;
         let db_path = format!("{}/.omp/agent/agent.db", home);
         if !std::path::Path::new(&db_path).exists() {
             return None;
@@ -100,7 +101,14 @@ impl TokenManager {
     }
 
     async fn fetch_token_from_omp() -> Result<String, anyhow::Error> {
-        let output = tokio::process::Command::new("/run/current-system/sw/bin/omp")
+        let omp_bin = std::env::var("OMP_BIN").unwrap_or_else(|_| {
+            if std::path::Path::new("/run/current-system/sw/bin/omp").exists() {
+                "/run/current-system/sw/bin/omp".to_string()
+            } else {
+                "omp".to_string()
+            }
+        });
+        let output = tokio::process::Command::new(&omp_bin)
             .args(["token", "google-antigravity"])
             .output()
             .await?;

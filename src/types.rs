@@ -12,6 +12,7 @@ pub struct CompletionRequest {
     #[serde(default)]
     pub stop: Option<StopValue>,
     #[serde(default)]
+    #[allow(dead_code)]
     pub stream: Option<bool>,
 }
 
